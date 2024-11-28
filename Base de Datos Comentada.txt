@@ -1,0 +1,139 @@
+-- Crear la base de datos para la gestión de pagos y cursos
+CREATE DATABASE gestion_pagos_cursos;
+
+-- Usar la base de datos recién creada
+USE gestion_pagos_cursos;
+
+-- Tabla Usuarios: almacena información básica de los usuarios del sistema
+CREATE TABLE Usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada usuario
+    nombre_completo VARCHAR(255) NOT NULL,  -- Nombre completo del usuario
+    cedula VARCHAR(20) NOT NULL UNIQUE,  -- Cédula única del usuario
+    correo VARCHAR(255) NOT NULL UNIQUE,  -- Correo electrónico único del usuario
+    telefono VARCHAR(15),  -- Número de teléfono (opcional)
+    celular VARCHAR(15),  -- Número de celular (opcional)
+    direccion TEXT,  -- Dirección del usuario (opcional)
+    contraseña VARCHAR(255) NOT NULL,  -- Contraseña encriptada del usuario
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación del registro
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',  -- Estado del usuario
+    UNIQUE (cedula, correo)  -- Asegura que la combinación de cédula y correo sea única
+);
+
+-- Tabla Estudiantes: hereda de Usuarios y almacena información específica de estudiantes
+CREATE TABLE Estudiantes (
+    id INT PRIMARY KEY,  -- Identificador único (heredado de Usuarios)
+    matricula VARCHAR(20) NOT NULL UNIQUE,  -- Matrícula única del estudiante
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de registro del estudiante
+    FOREIGN KEY (id) REFERENCES Usuarios(id) ON DELETE CASCADE  -- Relación con la tabla Usuarios
+);
+
+-- Tabla Docentes: hereda de Usuarios y almacena información específica de docentes
+CREATE TABLE Docentes (
+    id INT PRIMARY KEY,  -- Identificador único (heredado de Usuarios)
+    especialidad VARCHAR(255) NOT NULL,  -- Especialidad del docente
+    fecha_contratacion DATE NOT NULL,  -- Fecha de contratación del docente
+    facultad VARCHAR(255) NOT NULL,  -- Facultad a la que pertenece el docente
+    escuela VARCHAR(255) NOT NULL,  -- Escuela dentro de la facultad
+    campus VARCHAR(255) NOT NULL,  -- Campus donde trabaja el docente
+    estatus ENUM('activo', 'jubilado') NOT NULL DEFAULT 'activo',  -- Estado laboral del docente
+    codigo ENUM('invitado', 'oficial') NOT NULL,  -- Tipo de código del docente
+    FOREIGN KEY (id) REFERENCES Usuarios(id) ON DELETE CASCADE  -- Relación con la tabla Usuarios
+);
+
+-- Tabla Administrativos: hereda de Usuarios y tiene permisos de acceso
+CREATE TABLE Administrativos (
+    id INT PRIMARY KEY,  -- Identificador único (heredado de Usuarios)
+    departamento VARCHAR(255) NOT NULL,  -- Departamento al que pertenece el administrativo
+    cargo VARCHAR(255) NOT NULL,  -- Cargo del administrativo
+    fecha_ingreso DATE NOT NULL,  -- Fecha de ingreso del administrativo
+    acceso ENUM('solo_ver', 'ver_agregar', 'superusuario') NOT NULL DEFAULT 'solo_ver',  -- Nivel de acceso del administrativo
+    FOREIGN KEY (id) REFERENCES Usuarios(id) ON DELETE CASCADE  -- Relación con la tabla Usuarios
+);
+
+-- Tabla Cursos: almacena información sobre los cursos disponibles
+CREATE TABLE Cursos (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada curso
+    nombre VARCHAR(255) NOT NULL,  -- Nombre del curso
+    descripcion TEXT,  -- Descripción del curso
+    tipo ENUM('curso', 'diplomado') NOT NULL,  -- Tipo de curso (curso o diplomado)
+    tarifa DECIMAL(10, 2) NOT NULL,  -- Tarifa del curso
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',  -- Estado del curso
+    fecha_inicio DATE NOT NULL,  -- Fecha de inicio del curso
+    fecha_fin DATE NOT NULL,  -- Fecha de finalización del curso
+    capacidad INT DEFAULT 0,  -- Capacidad máxima del curso
+    docente_id INT,  -- Relación con Docentes
+    modulos INT NOT NULL,  -- Número de módulos del curso
+    horas INT NOT NULL,  -- Total de horas del curso
+    codigo VARCHAR(20) NOT NULL,  -- Código del curso
+    profesor VARCHAR(255) NOT NULL,  -- Nombre del profesor (alternativa a docente_id)
+    facultad VARCHAR(255) NOT NULL,  -- Facultad a la que pertenece el curso
+    telefono VARCHAR(15) NOT NULL,  -- Teléfono de contacto para el curso
+    imagen_url VARCHAR(255),  -- URL de la imagen del curso
+    FOREIGN KEY (docente_id) REFERENCES Docentes(id) ON DELETE SET NULL  -- Relación con la tabla Docentes
+);
+
+-- Tabla Inscripciones: almacena las inscripciones de los estudiantes en los cursos
+CREATE TABLE Inscripciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada inscripción
+    estudiante_id INT,  -- Relación con la tabla Estudiantes
+    curso_id INT,  -- Relación con la tabla Cursos
+    fecha_inscripcion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de inscripción
+    estado ENUM('inscrito', 'pendiente') NOT NULL,  -- Estado de la inscripción
+    FOREIGN KEY (estudiante_id) REFERENCES Estudiantes(id) ON DELETE CASCADE,  -- Relación con la tabla Estudiantes
+    FOREIGN KEY (curso_id) REFERENCES Cursos(id) ON DELETE CASCADE  -- Relación con la tabla Cursos
+);
+
+-- Tabla Pagos: almacena información sobre los pagos realizados por los estudiantes
+CREATE TABLE Pagos (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada pago
+    inscripcion_id INT,  -- Relación con la tabla Inscripciones
+    metodo_pago ENUM('transferencia', 'Paypal', 'manual') NOT NULL,  -- Método de pago utilizado
+    monto DECIMAL(10, 2) NOT NULL,  -- Monto del pago
+    estado_pago ENUM('completado', 'pendiente', 'parcial') NOT NULL,  -- Estado del pago
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de realización del pago
+    fecha_vencimiento DATE,  -- Fecha de vencimiento del pago
+    FOREIGN KEY (inscripcion_id) REFERENCES Inscripciones(id) ON DELETE CASCADE  -- Relación con la tabla Inscripciones
+);
+
+-- Tabla Historial de Pagos: para auditar cambios en los estados de pago
+CREATE TABLE Historial_Pagos (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada registro de historial
+    pago_id INT,  -- Relación con la tabla Pagos
+    estado_pago_anterior ENUM('completado', 'pendiente', 'parcial'),  -- Estado anterior del pago
+    estado_pago_nuevo ENUM('completado', 'pendiente', 'parcial'),  -- Nuevo estado del pago
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha del cambio de estado
+    comentario TEXT,  -- Comentario sobre el cambio de estado
+    FOREIGN KEY (pago_id) REFERENCES Pagos(id) ON DELETE CASCADE  -- Relación con la tabla Pagos
+);
+
+-- Tabla Reembolsos: almacena información sobre solicitudes de reembolso
+CREATE TABLE Reembolsos (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada solicitud de reembolso
+    usuario_id INT,  -- Relación con la tabla Usuarios
+    pago_id INT,  -- Relación con la tabla Pagos
+    motivo TEXT NOT NULL,  -- Motivo de la solicitud de reembolso
+    estado ENUM('pendiente', 'aprobado', 'rechazado') NOT NULL,  -- Estado de la solicitud
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de solicitud de reembolso
+    fecha_resolucion TIMESTAMP NULL,  -- Fecha de resolución del reembolso (si aplica)
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id) ON DELETE CASCADE,  -- Relación con la tabla Usuarios
+    FOREIGN KEY (pago_id) REFERENCES Pagos(id) ON DELETE CASCADE  -- Relación con la tabla Pagos
+);
+
+-- Tabla Notificaciones: almacena notificaciones enviadas a los usuarios
+CREATE TABLE Notificaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada notificación
+    usuario_id INT,  -- Relación con la tabla Usuarios
+    tipo_notificacion ENUM('recordatorio_pago', 'ingreso_registrado') NOT NULL,  -- Tipo de notificación
+    mensaje TEXT NOT NULL,  -- Mensaje de la notificación
+    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de envío de la notificación
+    estado ENUM('enviado', 'pendiente') DEFAULT 'pendiente',  -- Estado de la notificación
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id) ON DELETE CASCADE  -- Relación con la tabla Usuarios
+);
+
+-- Tabla Reportes: almacena reportes generados por el sistema
+CREATE TABLE Reportes (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único para cada reporte
+    tipo_reporte ENUM('ingresos', 'pagos_pendientes', 'asistencia') NOT NULL,  -- Tipo de reporte
+    fecha_generacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de generación del reporte
+    descripcion TEXT NOT NULL  -- Descripción del reporte
+);

@@ -1,0 +1,138 @@
+/* estilos.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    max-width: 800px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.icon-box {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+.icon-box:hover {
+    transform: scale(1.1);
+    background-color: #45a049;
+}
+.icon-box i {
+    font-size: 2em;
+    margin-bottom: 5px;
+}
+.icon-text {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.card {
+    width: 100%;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    box-sizing: border-box;
+}
+.card-header {
+    text-align: center;
+    color: #4CAF50;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+.field-label {
+    font-weight: bold;
+    color: #4CAF50;
+    margin-bottom: 5px;
+}
+.field-value {
+    font-size: 1em;
+    color: #333;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+select, input[type="date"], input[type="number"], input[type="text"],
+input[type="tel"], input[type="email"], input[type="password"] {
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: border-color 0.3s;
+    background-color: #f9f9f9;
+    width: 100%;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.action-btn, .back-btn, .cancel-btn {
+    padding: 10px 20px;
+    font-size: 1em;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.action-btn {
+    background-color: #4CAF50;
+}
+.action-btn:hover {
+    background-color: #45a049;
+}
+.back-btn {
+    background-color: #007BFF;
+}
+.back-btn:hover {
+    background-color: #0056b3;
+}
+.cancel-btn {
+    background-color: #f44336;
+}
+.cancel-btn:hover {
+    background-color: #d32f2f;
+}

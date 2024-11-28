@@ -1,0 +1,1 @@
+web: gunicorn AppDevTFG2024.wsgi
